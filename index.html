@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#f0640a"><title>Smart Topup</title>
+<style>
+:root{--orange:#f0640a;--dark:#191919;--muted:#777;--bg:#f6f6f6;--line:#eee}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:var(--bg);color:#222;padding-bottom:76px}
+header{background:var(--orange);color:white;padding:18px 16px 16px;border-radius:0 0 20px 20px;box-shadow:0 3px 12px #0001}
+.top{display:flex;align-items:center;justify-content:space-between}.brand{font-weight:900;font-size:23px;letter-spacing:.2px}.brand span{color:#fff2b8}
+.pill{border:1px solid #ffffff77;border-radius:20px;padding:7px 10px;font-size:12px;color:white;background:#ffffff16}
+.greet{margin-top:18px;font-size:14px;opacity:.95}.balance{font-size:27px;font-weight:800;margin-top:4px}
+.wrap{padding:14px}.notice{font-size:12px;background:#fff6e9;border:1px solid #ffe0bd;color:#8a430b;border-radius:12px;padding:10px 12px;line-height:1.5;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{background:white;border-radius:15px;padding:14px;box-shadow:0 2px 8px #00000008;border:1px solid #f1f1f1}
+h2{font-size:17px;margin:5px 0 12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px}.sectionhead h2{margin:0}.link{color:var(--orange);font-size:12px}
+.game{min-height:104px;background:linear-gradient(135deg,#fff1e5,#fff);border-radius:15px;padding:14px;border:1px solid #ffe1cb;display:flex;flex-direction:column;justify-content:space-between}
+.emoji{font-size:28px}.game b{font-size:14px}.game small{color:var(--muted);margin-top:4px}
+button{border:0;background:var(--orange);color:white;border-radius:11px;padding:12px 14px;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+button.secondary{background:#fff0e6;color:var(--orange)}button.dark{background:#222}button:disabled{opacity:.5}
+input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:6px 0 12px;font-size:14px;background:white}
+label{font-size:12px;color:#555}.hidden{display:none!important}.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:white;border-top:1px solid #eee;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:10}
+.tabs button{background:white;color:#777;padding:5px 2px;font-size:11px;width:20%;font-weight:600}.tabs button.active{color:var(--orange)}.tabs span{display:block;font-size:20px;margin-bottom:3px}
+.package{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.package:last-child{border:0}.package strong{font-size:14px}.price{color:var(--orange);font-weight:800;margin-top:5px}.package button{width:auto;padding:9px 12px}
+.row{display:flex;gap:10px}.row>*{flex:1}.muted{color:var(--muted);font-size:12px}.status{display:inline-block;background:#fff1df;color:#a44d00;border-radius:15px;padding:5px 9px;font-size:11px}
+.item{background:white;border-radius:12px;padding:13px;margin:9px 0;border:1px solid #eee}.itemtop{display:flex;justify-content:space-between;gap:8px}.empty{text-align:center;padding:26px 10px;color:#888;font-size:13px}
+footer{text-align:center;font-size:10px;color:#999;padding:22px 8px}
+</style>
+</head>
+<body>
+<header>
+ <div class="top"><div class="brand">SMART <span>TOPUP</span></div><button class="pill" style="width:auto" onclick="show('profile')">👤 অ্যাকাউন্ট</button></div>
+ <div class="greet" id="welcome">গেম টপ-আপ সহজ ও দ্রুত</div>
+ <div class="balance" id="balance">৳ 0.00</div><div style="font-size:12px;opacity:.85">ওয়ালেট ব্যালেন্স</div>
+</header>
+<div class="wrap">
+ <div class="notice" id="modeNotice">শুরু করার জন্য লগইন করুন। বাস্তব পেমেন্ট যাচাই ছাড়া ওয়ালেটে টাকা যোগ হবে না।</div>
+ <section id="home">
+  <div class="sectionhead"><h2>🎮 জনপ্রিয় গেম</h2><span class="link">সব গেম</span></div>
+  <div class="grid">
+   <div class="game"><div class="emoji">💎</div><div><b>Free Fire</b><small>Diamonds Top Up</small></div><button style="margin-top:12px" onclick="openGame('Free Fire')">প্যাকেজ দেখুন</button></div>
+   <div class="game"><div class="emoji">🪖</div><div><b>PUBG Mobile</b><small>UC Top Up</small></div><button style="margin-top:12px" onclick="openGame('PUBG Mobile')">প্যাকেজ দেখুন</button></div>
+  </div>
+  <div class="sectionhead"><h2>🔥 জনপ্রিয় প্যাকেজ</h2><span class="link" onclick="show('games')">সব দেখুন</span></div>
+  <div class="card" id="featured"></div>
+  <div class="sectionhead"><h2>⚡ দ্রুত অ্যাকশন</h2></div>
+  <div class="grid"><button onclick="show('addmoney')">＋ Add Money</button><button class="secondary" onclick="show('orders')">📦 আমার অর্ডার</button></div>
+ </section>
+ <section id="games" class="hidden"><div class="sectionhead"><h2>গেম নির্বাচন</h2></div><div class="grid"><div class="game"><div class="emoji">💎</div><b>Free Fire</b><button onclick="openGame('Free Fire')">প্যাকেজ</button></div><div class="game"><div class="emoji">🪖</div><b>PUBG Mobile</b><button onclick="openGame('PUBG Mobile')">প্যাকেজ</button></div></div></section>
+ <section id="packages" class="hidden"><button class="secondary" onclick="show('games')">← গেমে ফিরুন</button><div class="sectionhead"><h2 id="gameTitle">প্যাকেজ</h2></div><div class="card"><label>Player ID</label><input id="playerId" placeholder="আপনার গেম Player ID"><div class="muted">অর্ডারের আগে Player ID ভালোভাবে যাচাই করুন।</div><div id="packageList"></div></div></section>
+ <section id="addmoney" class="hidden"><div class="sectionhead"><h2>＋ Add Money</h2></div><div class="card"><div class="notice">পেমেন্ট নম্বর: <b id="payNumber">01321966905</b><br>আপনার bKash/Nagad অ্যাপ থেকে Send Money করুন। জমা দেওয়া তথ্য যাচাই না হওয়া পর্যন্ত ব্যালেন্স যোগ হবে না।</div><label>পেমেন্ট মাধ্যম</label><select id="payMethod"><option>bKash</option><option>Nagad</option></select><label>টাকার পরিমাণ (৳)</label><input id="depositAmount" type="number" min="10" placeholder="যেমন 200"><label>যে নম্বর থেকে পাঠিয়েছেন</label><input id="senderNumber" inputmode="tel" placeholder="01XXXXXXXXX"><label>Transaction ID</label><input id="trxId" placeholder="Transaction ID লিখুন"><button onclick="submitDeposit()">ডিপোজিট অনুরোধ জমা দিন</button></div></section>
+ <section id="orders" class="hidden"><div class="sectionhead"><h2>📦 আমার অর্ডার</h2></div><div id="ordersList"></div></section>
+ <section id="wallet" class="hidden"><div class="sectionhead"><h2>👛 ওয়ালেট</h2></div><div class="card"><div class="muted">বর্তমান ব্যালেন্স</div><div class="balance" id="walletBalance" style="color:var(--orange)">৳ 0.00</div><button onclick="show('addmoney')">Add Money</button></div><div class="sectionhead"><h2>লেনদেন</h2></div><div id="transactions"></div></section>
+ <section id="profile" class="hidden"><div class="sectionhead"><h2>👤 অ্যাকাউন্ট</h2></div><div class="card" id="authCard"><h2 id="authTitle">লগইন / সাইনআপ</h2><label>নাম (শুধু সাইনআপে)</label><input id="fullName" placeholder="আপনার নাম"><label>ইমেইল</label><input id="email" type="email" placeholder="name@example.com"><label>পাসওয়ার্ড</label><input id="password" type="password" placeholder="কমপক্ষে ৬ অক্ষর"><div class="row"><button onclick="auth('login')">লগইন</button><button class="secondary" onclick="auth('signup')">সাইনআপ</button></div><p class="muted" id="authMsg">ডেটাবেস কনফিগার না থাকলে ডেমো মোডে পরীক্ষা করা যাবে।</p></div><div class="card hidden" id="profileCard"><h2 id="profileName">আমার অ্যাকাউন্ট</h2><p id="profileEmail" class="muted"></p><button class="secondary" onclick="logout()">লগআউট</button></div>
+ <div class="sectionhead"><h2>🛡️ অ্যাডমিন</h2></div><div class="card"><p class="muted">অ্যাডমিন অ্যাক্সেস সার্ভার/ডেটাবেসে নির্ধারিত ভূমিকা অনুযায়ী সীমাবদ্ধ। ডেমো মোডে কেবল পরীক্ষামূলক অ্যাডমিন স্ক্রিন দেখানো হয়।</p><button class="dark" onclick="adminLogin()">অ্যাডমিন প্যানেল</button></div></section>
+ <section id="admin" class="hidden"><div class="sectionhead"><h2>🛡️ অ্যাডমিন প্যানেল</h2></div><div class="notice">ডেমো অ্যাডমিন: admin@smarttopup.demo / Admin123! — শুধুমাত্র ডেমো পরীক্ষা। বাস্তব সাইটে এই পাসওয়ার্ড ব্যবহার করবেন না।</div><div class="row"><button onclick="renderAdmin('deposit')">ডিপোজিট</button><button class="secondary" onclick="renderAdmin('order')">অর্ডার</button></div><div id="adminList"></div></section>
+ <footer>Smart Topup · নিরাপদ গেম টপ-আপের জন্য পেমেন্ট যাচাই আবশ্যক।</footer>
+</div>
+<nav class="tabs"><button class="active" onclick="show('home',this)"><span>⌂</span>হোম</button><button onclick="show('games',this)"><span>🎮</span>গেম</button><button onclick="show('wallet',this)"><span>👛</span>ওয়ালেট</button><button onclick="show('orders',this)"><span>📦</span>অর্ডার</button><button onclick="show('profile',this)"><span>☻</span>প্রোফাইল</button></nav>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const cfg=window.SMARTTOPUP_CONFIG||{}, hasDb=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY);
+const sb=hasDb&&window.supabase?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
+const key='smarttopup_state_v1';
+let state=JSON.parse(localStorage.getItem(key)||'{"user":null,"users":[],"orders":[],"deposits":[],"balance":0,"transactions":[]}');
+let currentGame='Free Fire', authMode='login';
+function save(){localStorage.setItem(key,JSON.stringify(state));refresh()}
+function money(n){return '৳ '+Number(n||0).toFixed(2)}
+function show(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='orders')renderOrders();if(id==='wallet')renderWallet();if(id==='admin')renderAdmin('deposit');}
+const catalog={'Free Fire':[{name:'100 Diamonds',price:85},{name:'210 Diamonds',price:165},{name:'530 Diamonds',price:410},{name:'1080 Diamonds',price:810},{name:'Weekly Membership',price:165}],'PUBG Mobile':[{name:'60 UC',price:125},{name:'325 UC',price:610},{name:'660 UC',price:1190},{name:'1800 UC',price:3000},{name:'Royale Pass',price:850}]};
+function openGame(g){currentGame=g;document.getElementById('gameTitle').textContent=g+' প্যাকেজ';document.getElementById('packageList').innerHTML=catalog[g].map((p,i)=>`<div class="package"><div><strong>${p.name}</strong><div class="price">${money(p.price)}</div></div><button onclick="buy('${g}',${i})">কিনুন</button></div>`).join('');show('packages')}
+document.getElementById('featured').innerHTML=['Free Fire','PUBG Mobile'].map(g=>`<div class="package"><div><strong>${g}</strong><div class="muted">${catalog[g][0].name}</div><div class="price">${money(catalog[g][0].price)}</div></div><button onclick="openGame('${g}')">দেখুন</button></div>`).join('');
+function requireUser(){if(!state.user){alert('প্রথমে প্রোফাইল থেকে লগইন বা সাইনআপ করুন।');show('profile');return false}return true}
+async function auth(mode){const email=document.getElementById('email').value.trim(),pass=document.getElementById('password').value,name=document.getElementById('fullName').value.trim();if(!email||pass.length<6){alert('সঠিক ইমেইল ও অন্তত ৬ অক্ষরের পাসওয়ার্ড দিন।');return}
+if(sb){try{if(mode==='signup'){const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});if(error)throw error;alert('সাইনআপ অনুরোধ পাঠানো হয়েছে। ইমেইল কনফার্মেশন চালু থাকলে ইমেইল যাচাই করুন।');}else{const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error)throw error;state.user={email,name:data.user.user_metadata?.full_name||email};save();alert('লগইন সফল');}}catch(e){alert(e.message)}return}
+if(mode==='signup'){if(state.users.some(u=>u.email===email)){alert('এই ইমেইল দিয়ে অ্যাকাউন্ট আছে।');return}state.users.push({email,pass,name:name||email});state.user={email,name:name||email};save();alert('ডেমো অ্যাকাউন্ট তৈরি হয়েছে।');}else{const u=state.users.find(u=>u.email===email&&u.pass===pass);if(!u){alert('অ্যাকাউন্ট পাওয়া যায়নি। আগে সাইনআপ করুন।');return}state.user={email:u.email,name:u.name};save();alert('ডেমো লগইন সফল।')}}
+function logout(){state.user=null;save();show('profile')}
+function buy(g,i){if(!requireUser())return;const id=document.getElementById('playerId').value.trim();if(id.length<4){alert('সঠিক Player ID লিখুন।');return}const p=catalog[g][i];if(state.balance<p.price){if(confirm('ওয়ালেটে পর্যাপ্ত টাকা নেই। Add Money খুলবেন?'))show('addmoney');return}if(!confirm(`${p.name} — ${money(p.price)} দিয়ে অর্ডার করবেন?`))return;state.balance-=p.price;state.orders.unshift({id:'ST'+Date.now(),game:g,package:p.name,price:p.price,playerId:id,status:'পেমেন্ট/অর্ডার যাচাই অপেক্ষমাণ',date:new Date().toLocaleString('bn-BD')});state.transactions.unshift({type:'অর্ডার',amount:-p.price,date:new Date().toLocaleString('bn-BD')});save();alert('অর্ডার তৈরি হয়েছে। ডেমো মোডে ডায়মন্ড স্বয়ংক্রিয়ভাবে পাঠানো হয় না।');show('orders')}
+function submitDeposit(){if(!requireUser())return;const amount=Number(document.getElementById('depositAmount').value),trx=document.getElementById('trxId').value.trim(),sender=document.getElementById('senderNumber').value.trim();if(amount<10||!trx||sender.length<8){alert('টাকার পরিমাণ, প্রেরকের নম্বর ও Transaction ID পূরণ করুন।');return}state.deposits.unshift({id:'DP'+Date.now(),method:document.getElementById('payMethod').value,amount,trx,sender,email:state.user.email,status:'অ্যাডমিন যাচাই অপেক্ষমাণ',date:new Date().toLocaleString('bn-BD')});save();alert('ডিপোজিট অনুরোধ জমা হয়েছে। যাচাই না হওয়া পর্যন্ত ব্যালেন্স যোগ হবে না।');show('wallet')}
+function renderOrders(){const el=document.getElementById('ordersList'),list=state.orders.filter(o=>state.user&&o.email===state.user.email);el.innerHTML=list.length?list.map(o=>`<div class="item"><div class="itemtop"><b>${o.game} · ${o.package}</b><span class="status">${o.status}</span></div><p class="muted">অর্ডার: ${o.id}<br>Player ID: ${o.playerId}<br>${o.date}</p><b>${money(o.price)}</b></div>`).join(''):'<div class="empty">এখনো কোনো অর্ডার নেই।</div>'}
+function renderWallet(){document.getElementById('walletBalance').textContent=money(state.balance);const t=state.transactions;document.getElementById('transactions').innerHTML=t.length?t.map(x=>`<div class="item"><div class="itemtop"><b>${x.type}</b><b>${money(x.amount)}</b></div><div class="muted">${x.date}</div></div>`).join(''):'<div class="empty">কোনো লেনদেন নেই।</div>'}
+function renderAdmin(type){const el=document.getElementById('adminList'),items=type==='deposit'?state.deposits:state.orders;el.innerHTML=items.length?items.map((x,i)=>`<div class="item"><div class="itemtop"><b>${type==='deposit'?'ডিপোজিট':'অর্ডার'} · ${x.id}</b><span class="status">${x.status}</span></div><p class="muted">${x.email||''} ${x.game||''} ${x.package||''}<br>${x.method||''} ${x.trx||''} ${x.date||''}</p><b>${money(x.amount??x.price)}</b><div class="row" style="margin-top:10px"><button onclick="adminAction('${type}',${i},true)">অনুমোদন</button><button class="secondary" onclick="adminAction('${type}',${i},false)">বাতিল</button></div></div>`).join(''):'<div class="empty">এখনো কোনো অনুরোধ নেই।</div>'}
+function adminLogin(){if(hasDb){alert('বাস্তব অ্যাডমিন প্যানেলের জন্য profiles.role ও সার্ভার-সাইড অনুমতি যাচাই যুক্ত করতে হবে। এই প্রজেক্টে production admin endpoint এখনও যুক্ত নয়।');return}const e=prompt('ডেমো অ্যাডমিন ইমেইল','admin@smarttopup.demo'),p=prompt('ডেমো পাসওয়ার্ড');if(e==='admin@smarttopup.demo'&&p==='Admin123!'){show('admin')}else alert('ডেমো অ্যাডমিন লগইন ব্যর্থ।')}
+function adminAction(type,i,approve){const arr=type==='deposit'?state.deposits:state.orders,x=arr[i];if(!x)return;if(!confirm(approve?'আপনি কি যাচাই করে অনুমোদন করছেন?':'অনুরোধ বাতিল করবেন?'))return;if(approve){x.status='অনুমোদিত';if(type==='deposit'){state.balance+=Number(x.amount);state.transactions.unshift({type:'ডিপোজিট',amount:Number(x.amount),date:new Date().toLocaleString('bn-BD')})}else{x.status='অর্ডার গ্রহণ করা হয়েছে';}}else x.status='বাতিল';save();renderAdmin(type)}
+function refresh(){document.getElementById('balance').textContent=money(state.balance);document.getElementById('welcome').textContent=state.user?'স্বাগতম, '+(state.user.name||state.user.email):'গেম টপ-আপ সহজ ও দ্রুত';document.getElementById('payNumber').textContent=cfg.PAYMENT_NUMBER||'পেমেন্ট নম্বর সেট করুন';document.getElementById('modeNotice').textContent=hasDb?'Supabase কনফিগার করা আছে। পেমেন্ট/টপ-আপ এখনও আলাদাভাবে যাচাই করতে হবে।':'ডেমো মোড: এই ডিভাইসেই তথ্য থাকে; বাস্তব টাকা বা ডায়মন্ড লেনদেন হয় না।';document.getElementById('authCard').classList.toggle('hidden',!!state.user);document.getElementById('profileCard').classList.toggle('hidden',!state.user);if(state.user){document.getElementById('profileName').textContent=state.user.name||'আমার অ্যাকাউন্ট';document.getElementById('profileEmail').textContent=state.user.email}}
+refresh();
+</script>
+</body></html>
