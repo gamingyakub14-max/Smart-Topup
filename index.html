@@ -289,117 +289,58 @@ function needUser() {
   return true;
 }
 
-async function buy(game,index) {
-  if(!needUser()) return;
-  const player=document.getElementById('playerId').value.trim();
-  if(player.length<4) return msg('সঠিক Player ID লিখুন।');
-  const p=catalog[game][index];
-  if(!confirm(p.name+' — '+money(p.price)+' মূল্যের অর্ডার অনুরোধ জমা দেবেন?')) return;
-  const {error}=await sb.from('orders').insert({
-    user_id:currentUser.id,game,package_name:p.name,
-    price:p.price,player_id:player,status:'pending'
-  });
-  if(error) return msg('অর্ডার জমা হয়নি: '+error.message);
-  msg('অর্ডার অনুরোধ জমা হয়েছে। অনুমোদন না হওয়া পর্যন্ত এটি সম্পন্ন নয়।');
-  show('orders');
-}
+async function buy(game, index) {
+  if (!needUser()) return;
+  if (!sb) return msg('Supabase সংযোগ নেই।');
 
-async function submitDeposit() {
-  if(!needUser()) return;
-  const amount=Number(document.getElementById('amount').value);
-  const sender=document.getElementById('sender').value.trim();
-  const trx=document.getElementById('trx').value.trim();
-  const method=document.getElementById('method').value;
-  if(amount<10||!sender||!trx) return msg('সব তথ্য সঠিকভাবে পূরণ করুন।');
-  const {error}=await sb.from('deposits').insert({
-    user_id:currentUser.id,method,amount,sender_number:sender,
-    transaction_id:trx,status:'pending'
-  });
-  if(error) return msg('ডিপোজিট জমা হয়নি: '+error.message);
-  document.getElementById('depositMsg').textContent='অনুরোধ জমা হয়েছে। যাচাই না হওয়া পর্যন্ত ব্যালেন্স যোগ হবে না।';
-  document.getElementById('amount').value='';
-  document.getElementById('sender').value='';
-  document.getElementById('trx').value='';
-}
+  const player = document.getElementById('playerId').value.trim();
 
-async function loadWallet() {
-  if(!needUser()) return;
-  // নিরাপদ wallet ledger/server endpoint যোগ না হওয়া পর্যন্ত
-  // অনুমোদিত ব্যালেন্স দেখানোর দাবি করা হচ্ছে না।
-  document.getElementById('walletBalance').textContent='সার্ভার ওয়ালেট যুক্ত করা বাকি';
-  document.getElementById('balance').textContent='৳ 0.00';
-}
-
-async function loadOrders() {
-  if(!currentUser||!sb) {
-    document.getElementById('ordersList').textContent='অর্ডার দেখতে লগইন করুন।';
-    return;
+  if (player.length < 4 || player.length > 100) {
+    return msg('সঠিক Player ID লিখুন।');
   }
-  const {data,error}=await sb.from('orders')
-    .select('id,game,package_name,price,player_id,status,created_at')
-    .eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  const el=document.getElementById('ordersList');
-  el.replaceChildren();
-  if(error) {el.textContent='অর্ডার লোড হয়নি: '+error.message;return;}
-  if(!data.length) {el.textContent='এখনো কোনো অর্ডার নেই।';return;}
-  data.forEach(o=>{
-    const d=document.createElement('div');d.className='item';
-    d.textContent=o.game+' — '+o.package_name+' — '+money(o.price)+' | '+o.status+' | Player ID: '+o.player_id;
-    el.append(d);
-  });
-}
 
-async function openAdmin() {
-  if(!needUser()) return;
-  if(!sb) return msg('Supabase সংযোগ নেই।');
-  const {data,error}=await sb.from('profiles')
-    .select('role').eq('id',currentUser.id).maybeSingle();
-  if(error) return msg('অ্যাডমিন ভূমিকা যাচাই করা যায়নি: '+error.message);
-  if(data?.role!=='admin') return msg('এই অ্যাকাউন্টের অ্যাডমিন অনুমতি নেই।');
-  currentProfile.role='admin';
-  show('admin');
-}
+  const p = catalog[game]?.[index];
 
-async function loadAdmin(table) {
-  if(!currentUser||currentProfile?.role!=='admin') {
-    document.getElementById('adminList').textContent='অ্যাডমিন অনুমতি যাচাই করুন।';
-    return;
+  if (!p) {
+    return msg('প্যাকেজ পাওয়া যায়নি।');
   }
-  const el=document.getElementById('adminList');
-  el.textContent='তথ্য লোড হচ্ছে…';
-  // RLS-এ admin-এর জন্য অনুমতি না থাকলে অনুরোধ ব্যর্থ হবে।
-  const fields=table==='deposits'
-    ? 'id,user_id,method,amount,sender_number,transaction_id,status,created_at'
-    : 'id,user_id,game,package_name,price,player_id,status,created_at';
-  const {data,error}=await sb.from(table).select(fields).order('created_at',{ascending:false});
-  el.replaceChildren();
-  if(error) {
-    el.textContent='তালিকা লোড হয়নি। Admin RLS policy ও নিরাপদ server function সেটআপ প্রয়োজন।';
-    return;
-  }
-  if(!data.length) {el.textContent='কোনো অনুরোধ নেই।';return;}
-  data.forEach(x=>{
-    const d=document.createElement('div');d.className='item';
-    d.textContent=table==='deposits'
-      ? x.method+' — '+money(x.amount)+' — '+x.status+' — '+x.transaction_id
-      : x.game+' — '+x.package_name+' — '+money(x.price)+' — '+x.status;
-    el.append(d);
-  });
-}
 
-if(sb) {
-  sb.auth.onAuthStateChange((_event,session)=>{
-    setTimeout(()=>syncUser().catch(e=>console.error(e.message)),0);
-  });
-  sb.auth.getSession().then(({data})=>{
-    if(data.session) syncUser().catch(e=>console.error(e.message));
-    else refresh();
-  });
-} else {
-  document.getElementById('message').textContent=
-    'Supabase কনফিগার করা নেই। config.js ও Supabase সেটিংস যাচাই করুন।';
-  refresh();
-}
-</script>
-</body>
-</html>
+  if (!confirm(
+    p.name + ' — ' + money(p.price) +
+    ' মূল্যের অর্ডার দেবেন? ব্যালেন্স থেকে টাকা কাটা হবে।'
+  )) return;
+
+  try {
+    const { data, error } = await sb.rpc('place_order', {
+      p_game: game,
+      p_package_name: p.name,
+      p_player_id: player
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data || data.success !== true) {
+      return msg(
+        data?.message === 'Insufficient balance'
+          ? 'আপনার ওয়ালেটে পর্যাপ্ত টাকা নেই। আগে টাকা যোগ করুন।'
+          : 'অর্ডার হয়নি: ' + (data?.message || 'অজানা সমস্যা')
+      );
+    }
+
+    msg(
+      'অর্ডার সফলভাবে তৈরি হয়েছে!\n' +
+      'অর্ডার ID: ' + data.order_id +
+      '\nমূল্য: ' + money(data.price)
+    );
+
+    await loadWallet();
+    await loadOrders();
+    show('orders');
+
+  } catch (e) {
+    console.error('Order error:', e);
+    msg('অর্ডার জমা হয়নি। সমস্যা: ' + e.message);
+  }
+  }
