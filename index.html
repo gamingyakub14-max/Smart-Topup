@@ -424,6 +424,17 @@ async function loadAdmin(table) {
     el.textContent = 'তালিকা লোড হয়নি। Supabase table ও RLS permissions পরীক্ষা করুন। ' + e.message;
   }
   }
+  if (table === 'deposits' && item.status === 'pending') {
+  const approveBtn = document.createElement('button');
+  approveBtn.textContent = 'Approve';
+  approveBtn.onclick = () => reviewPayment(item.id, 'approve');
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => reviewPayment(item.id, 'cancel');
+
+  row.append(approveBtn, cancelBtn);
+  }
 </script>
 </body>
 </html>
