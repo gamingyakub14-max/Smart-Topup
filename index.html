@@ -381,20 +381,24 @@ async function buy(game, index) {
 
 async function loadAdmin(table) {
   const el = document.getElementById('adminList');
+  el.replaceChildren();
   el.textContent = 'লোড হচ্ছে...';
 
-  if (!currentUser || currentProfile?.role !== 'admin') {
-    el.textContent = 'Admin অনুমতি নেই।';
+  if (!sb || !currentUser || currentProfile?.role !== 'admin') {
+    el.textContent = 'Admin অনুমতি নেই অথবা লগইন করা হয়নি।';
     return;
   }
 
   try {
-    const fields = table === 'deposits'
-      ? 'id,user_id,method,amount,transaction_id,status,created_at'
-      : 'id,user_id,game,package_name,price,player_id,status,created_at';
+    const isDeposit = table === 'deposits';
+    const dbTable = isDeposit ? 'payment_requests' : 'orders';
+
+    const fields = isDeposit
+      ? 'id,user_id,customer_name,customer_email,amount,payment_method,trx_id,status'
+      : 'id,user_id,game,package_name,player_id,price,status';
 
     const { data, error } = await sb
-      .from(table)
+      .from(dbTable)
       .select(fields)
       .order('created_at', { ascending: false });
 
@@ -412,29 +416,69 @@ async function loadAdmin(table) {
       row.className = 'item';
 
       const info = document.createElement('p');
-      info.textContent = table === 'orders'
-        ? `অর্ডার: ${item.package_name} | ${item.game} | ${money(item.price)} | স্ট্যাটাস: ${item.status} | Player ID: ${item.player_id}`
-        : `ডিপোজিট: ${money(item.amount)} | ${item.method} | Trx: ${item.transaction_id} | স্ট্যাটাস: ${item.status}`;
+
+      info.textContent = isDeposit
+        ? `ডিপোজিট: ${money(item.amount)} | ${item.payment_method} | Trx: ${item.trx_id} | স্ট্যাটাস: ${item.status}`
+        : `অর্ডার: ${item.package_name} | ${item.game} | ${money(item.price)} | Player ID: ${item.player_id} | স্ট্যাটাস: ${item.status}`;
 
       row.appendChild(info);
+
+      if (item.status === 'pending') {
+        const approveBtn = document.createElement('button');
+        approveBtn.textContent = '✅ Approve';
+        approveBtn.onclick = () =>
+          reviewRequest(item.id, isDeposit, 'approve');
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'secondary';
+        cancelBtn.textContent = '❌ Cancel';
+        cancelBtn.onclick = () =>
+          reviewRequest(item.id, isDeposit, 'cancel');
+
+        row.append(approveBtn, cancelBtn);
+      }
+
       el.appendChild(row);
     });
   } catch (e) {
     console.error(e);
-    el.textContent = 'তালিকা লোড হয়নি। Supabase table ও RLS permissions পরীক্ষা করুন। ' + e.message;
+    el.textContent = 'তালিকা লোড হয়নি: ' + e.message;
   }
-  }
-  if (table === 'deposits' && item.status === 'pending') {
-  const approveBtn = document.createElement('button');
-  approveBtn.textContent = 'Approve';
-  approveBtn.onclick = () => reviewPayment(item.id, 'approve');
+}
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.onclick = () => reviewPayment(item.id, 'cancel');
-
-  row.append(approveBtn, cancelBtn);
+async function reviewRequest(id, isDeposit, action) {
+  if (!sb || !currentUser || currentProfile?.role !== 'admin') {
+    return msg('Admin অনুমতি নেই।');
   }
-</script>
-</body>
-</html>
+
+  const label = action === 'approve' ? 'Approve' : 'Cancel';
+
+  if (!confirm(`আপনি কি এই অনুরোধটি ${label} করতে চান?`)) {
+    return;
+  }
+
+  const rpcName = isDeposit
+    ? (action === 'approve'
+        ? 'approve_payment_request'
+        : 'cancel_payment_request')
+    : (action === 'approve'
+        ? 'approve_order'
+        : 'cancel_order');
+
+  const { data, error } = await sb.rpc(rpcName, {
+    [isDeposit ? 'p_request_id' : 'p_order_id']: id
+  });
+
+  if (error) {
+    console.error(error);
+    return msg('কাজটি সম্পন্ন হয়নি: ' + error.message);
+  }
+
+  if (data && data.success === false) {
+    return msg(data.message || 'অনুরোধটি সম্পন্ন হয়নি।');
+  }
+
+  msg(label + ' অনুরোধ পাঠানো হয়েছে।');
+
+  await loadAdmin(isDeposit ? 'deposits' : 'orders');
+  }
