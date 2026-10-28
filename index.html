@@ -344,6 +344,86 @@ async function buy(game, index) {
     msg('অর্ডার জমা হয়নি। সমস্যা: ' + e.message);
   }
 }
+  async function openAdmin() {
+  if (!sb) {
+    alert('Supabase সংযোগ নেই। config.js পরীক্ষা করুন।');
+    return;
+  }
+
+  if (!currentUser) {
+    alert('প্রথমে লগইন করুন।');
+    show('profile');
+    return;
+  }
+
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('id, role')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data || data.role !== 'admin') {
+      alert('আপনার অ্যাকাউন্টে Admin অনুমতি নেই।');
+      return;
+    }
+
+    currentProfile = data;
+    show('admin');
+    await loadAdmin('orders');
+  } catch (e) {
+    console.error(e);
+    alert('Admin Panel খোলা যায়নি: ' + e.message);
+  }
+}
+
+async function loadAdmin(table) {
+  const el = document.getElementById('adminList');
+  el.textContent = 'লোড হচ্ছে...';
+
+  if (!currentUser || currentProfile?.role !== 'admin') {
+    el.textContent = 'Admin অনুমতি নেই।';
+    return;
+  }
+
+  try {
+    const fields = table === 'deposits'
+      ? 'id,user_id,method,amount,transaction_id,status,created_at'
+      : 'id,user_id,game,package_name,price,player_id,status,created_at';
+
+    const { data, error } = await sb
+      .from(table)
+      .select(fields)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    el.replaceChildren();
+
+    if (!data || data.length === 0) {
+      el.textContent = 'কোনো অনুরোধ পাওয়া যায়নি।';
+      return;
+    }
+
+    data.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item';
+
+      const info = document.createElement('p');
+      info.textContent = table === 'orders'
+        ? `অর্ডার: ${item.package_name} | ${item.game} | ${money(item.price)} | স্ট্যাটাস: ${item.status} | Player ID: ${item.player_id}`
+        : `ডিপোজিট: ${money(item.amount)} | ${item.method} | Trx: ${item.transaction_id} | স্ট্যাটাস: ${item.status}`;
+
+      row.appendChild(info);
+      el.appendChild(row);
+    });
+  } catch (e) {
+    console.error(e);
+    el.textContent = 'তালিকা লোড হয়নি। Supabase table ও RLS permissions পরীক্ষা করুন। ' + e.message;
+  }
+  }
 </script>
 </body>
 </html>
